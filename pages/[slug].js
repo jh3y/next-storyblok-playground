@@ -4,12 +4,11 @@ import Storyblok from '@utils/storyblok'
 import useStoryblok from '@hooks/storyblok'
 import Dynamic from '@components/dynamic'
 
-
 const SEO = ({ blok }) => {
   return (
     <Head>
       <title>{blok.title}</title>
-      <meta name="description" content={blok.description}/>
+      <meta name="description" content={blok.description} />
     </Head>
   )
 }
@@ -18,14 +17,18 @@ export default function Home({ story, preview }) {
   // One-liner to initiate the script. Should this only happen in preview mode?
   // Or does it get ignored?
   story = useStoryblok(story, preview)
-  const seoBlok = story.content.body.filter(blok => blok.component === 'seo')[0]
+  const seoBlok = story.content.body.filter(
+    (blok) => blok.component === 'seo'
+  )[0]
   return (
     <Layout>
-      {seoBlok && <SEO blok={seoBlok}/>}
+      {seoBlok && <SEO blok={seoBlok} />}
       <h1 className="text-xl text-blue-500 font-bold">{story && story.name}</h1>
-      { story ? story.content.body.filter(blok => blok.component !== 'seo').map((blok) => (
-        <Dynamic blok={blok} key={blok._uid}/>
-      )) : null }
+      {story
+        ? story.content.body
+            .filter((blok) => blok.component !== 'seo')
+            .map((blok) => <Dynamic blok={blok} key={blok._uid} />)
+        : null}
     </Layout>
   )
 }
@@ -57,16 +60,21 @@ export async function getStaticPaths() {
   let { data } = await Storyblok.get('cdn/links/', {})
 
   let paths = []
-  Object.keys(data.links).forEach(linkKey => {
-      if (!data.links[linkKey].is_folder) {
-          if (data.links[linkKey].slug !== 'home') {
-              paths.push({ params: { slug: data.links[linkKey].slug } })
-          }
+  Object.keys(data.links).forEach((linkKey) => {
+    if (!data.links[linkKey].is_folder) {
+      // Need to filter out the things we don't want.
+      // Such as children of folders. Is there a way to weed that out??
+      if (
+        data.links[linkKey].slug !== 'home' &&
+        data.links[linkKey].slug.indexOf('/') === -1
+      ) {
+        paths.push({ params: { slug: data.links[linkKey].slug } })
       }
+    }
   })
 
   return {
-      paths: paths,
-      fallback: false
+    paths: paths,
+    fallback: false,
   }
 }

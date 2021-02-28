@@ -8,6 +8,7 @@ export default function Blog({ story, preview }) {
   // One-liner to initiate the script. Should this only happen in preview mode?
   // Or does it get ignored?
   story = useStoryblok(story, preview)
+  console.info(story.name)
   return (
     <Layout>
       <h1 className="text-xl text-blue-500 font-bold">{story && story.name}</h1>
@@ -19,7 +20,7 @@ export default function Blog({ story, preview }) {
 }
 
 export async function getStaticProps(context) {
-  let slug = 'blog'
+  let slug = 'writing'
   // Would it be better to base this on process.env.NODE_ENV too?
   // This gets around having to set self signed certificates or set flags in chrome.
   const draft = process.env.NODE_ENV === 'development' || context.preview
@@ -28,7 +29,6 @@ export async function getStaticProps(context) {
     version: draft ? 'draft' : 'published',
     ...(context.preview && { cv: Date.now() }),
   }
-  console.info(context, params)
 
   const { data } = await Storyblok.get(`cdn/stories/${slug}`, params)
 
@@ -41,21 +41,3 @@ export async function getStaticProps(context) {
     revalidate: 10,
   }
 }
-
-// export async function getStaticPaths() {
-//   let { data } = await Storyblok.get('cdn/links/?starts_with=writing', {})
-
-//   let paths = []
-//   Object.keys(data.links).forEach((linkKey) => {
-//     if (!data.links[linkKey].is_folder) {
-//       paths.push({ params: { slug: data.links[linkKey].slug } })
-//     }
-//   })
-
-//   console.info(paths)
-
-//   return {
-//     paths,
-//     fallback: false,
-//   }
-// }
